@@ -1,0 +1,105 @@
+#include <iostream>
+using namespace std;
+
+#define INF 999
+#define MAX 10
+
+void displayRoutingTable(int dist[][MAX], int nextHop[][MAX], int n) {
+    cout << "\nFinal Routing Table:\n\n";
+    cout << "Source\tDestination\tCost\tNext Hop\tShortest Path\n";
+    cout << "---------------------------------------------------------------\n";
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << i + 1 << "\t" << j + 1 << "\t\t";
+
+            if (dist[i][j] == INF) {
+                cout << "INF\t-\t\tNo Path";
+            }
+            else {
+                cout << dist[i][j] << "\t";
+
+                if (i == j) {
+                    cout << "-\t\t" << i + 1;
+                }
+                else {
+                    cout << nextHop[i][j] + 1 << "\t\t";
+
+                    // Print shortest path
+                    int current = i;
+                    cout << current + 1;
+
+                    while (current != j) {
+                        current = nextHop[current][j];
+                        cout << " -> " << current + 1;
+                    }
+                }
+            }
+
+            cout << endl;
+        }
+    }
+}
+
+void distanceVectorRouting(int cost[][MAX], int n) {
+    int dist[MAX][MAX];
+    int nextHop[MAX][MAX];
+
+    // Initialize distance and next hop tables
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            dist[i][j] = cost[i][j];
+
+            if (i != j && cost[i][j] != INF)
+                nextHop[i][j] = j;
+            else
+                nextHop[i][j] = -1;
+        }
+    }
+
+    // Apply Distance Vector Routing Algorithm
+    bool updated = true;
+
+    while (updated) {
+        updated = false;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+
+                    if (dist[i][k] != INF &&
+                        dist[k][j] != INF &&
+                        dist[i][j] > dist[i][k] + dist[k][j]) {
+
+                        dist[i][j] = dist[i][k] + dist[k][j];
+                        nextHop[i][j] = nextHop[i][k];
+                        updated = true;
+                    }
+                }
+            }
+        }
+    }
+
+    displayRoutingTable(dist, nextHop, n);
+}
+
+int main() {
+    int n;
+    int cost[MAX][MAX];
+
+    cout << "Enter number of routers: ";
+    cin >> n;
+
+    cout << "Enter the cost matrix (use " << INF
+         << " for no direct connection):\n";
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> cost[i][j];
+        }
+    }
+
+    distanceVectorRouting(cost, n);
+
+    return 0;
+}
